@@ -9,7 +9,6 @@ from app.database.database import engine, SessionLocal
 from app.database.models import Base, SensorReading
 from app.database.device_model import Device
 from app.models.schemas import SensorData
-from app.services import ai_service
 
 # Initialize database tables
 Base.metadata.create_all(bind=engine)
@@ -54,10 +53,11 @@ def serialize_reading(reading: SensorReading):
         "temperature": reading.temperature,
         "humidity": reading.humidity,
         "co2": reading.co2,
-        "prediction": ai_service.standardize_label(reading.prediction),
-        "lstm_prediction": ai_service.standardize_label(reading.lstm_prediction),
+        # Legacy prediction fields remain nullable for backward compatibility.
+        "prediction": reading.prediction,
+        "lstm_prediction": reading.lstm_prediction,
         "lstm_confidence": reading.lstm_confidence,
-        "rf_prediction": ai_service.standardize_label(reading.rf_prediction),
+        "rf_prediction": reading.rf_prediction,
         "rf_confidence": reading.rf_confidence,
         "timestamp": reading.timestamp.isoformat(),
     }
@@ -74,27 +74,11 @@ def receive_sensor_data(
     _: None = Depends(verify_sensor_api_key),
     db: Session = Depends(get_db),
 ):
-    # =====================================
-    # 1. Run AI Models
-    # =====================================
-    ai = ai_service.predict_combined(
-        data.temperature,
-        data.humidity,
-        data.co2,
-    )
-
-    # =====================================
-    # 2. Save Reading
-    # =====================================
+    # Store raw sensor data. ML inference is performed by Flutter.
     reading = SensorReading(
         temperature=data.temperature,
         humidity=data.humidity,
         co2=data.co2,
-        prediction=ai["final"],
-        lstm_prediction=ai["lstm"]["label"],
-        lstm_confidence=ai["lstm"]["confidence"],
-        rf_prediction=ai["random_forest"]["label"],
-        rf_confidence=ai["random_forest"]["confidence"],
     )
     db.add(reading)
 
