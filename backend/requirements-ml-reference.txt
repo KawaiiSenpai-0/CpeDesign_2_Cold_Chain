@@ -1,0 +1,21 @@
+# Reference / validation ML dependencies (NOT production).
+#
+# These packages support the local/reference ML implementation and the
+# validation tooling only:
+#   - backend/app/services/ai_service.py          (Keras LSTM + RandomForest)
+#   - backend/scripts/ml_validation/*.py          (export/verify/ensemble scripts)
+#
+# The deployed FastAPI backend (backend/app/main.py) does NOT import TensorFlow,
+# scikit-learn, NumPy or joblib, so these are intentionally kept out of
+# backend/requirements.txt. In production, ML inference runs in the Flutter app:
+#   ESP32 -> FastAPI validation/storage -> PostgreSQL -> Flutter local ML
+#
+# Install this file only when running the reference implementation locally:
+#   pip install -r requirements-ml-reference.txt
+#
+# Historical pins are preserved unchanged.
+
+numpy==2.5.1
+joblib==1.5.3
+scikit-learn==1.6.1
+tensorflow==2.21.0

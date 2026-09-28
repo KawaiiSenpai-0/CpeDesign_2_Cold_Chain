@@ -1,11 +1,14 @@
+# Production runtime dependencies for the deployed FastAPI backend.
+#
+# The deployed service performs validation/storage only:
+#   ESP32 -> FastAPI -> PostgreSQL -> Flutter local ML
+# It does NOT run ML inference, so TensorFlow, scikit-learn, NumPy and joblib
+# are intentionally NOT listed here (Render's Python 3.14 image cannot install
+# tensorflow==2.21.0). The reference/validation ML dependencies live in
+# backend/requirements-ml-reference.txt.
+
 fastapi==0.140.0
 uvicorn==0.51.0
 SQLAlchemy==2.0.51
 # PostgreSQL driver used when DATABASE_URL is supplied by Render.
 psycopg[binary]>=3.2,<4
-# Retained for the local reference/rollback ML implementation and validation
-# scripts; production FastAPI ingestion does not invoke them for new readings.
-numpy==2.5.1
-joblib==1.5.3
-scikit-learn==1.6.1
-tensorflow==2.21.0
